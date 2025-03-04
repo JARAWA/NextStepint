@@ -1,0 +1,31 @@
+services:
+  # Frontend Service
+  - type: web
+    name: nextstep-frontend
+    env: static
+    buildCommand: echo "Static site build"
+    staticPublishPath: ./frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # JOSAA Service
+  - type: web
+    name: josaa-service
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd josaa-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
+
+  # MHTCET Service
+  - type: web
+    name: mhtcet-service
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd mhtcet-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
