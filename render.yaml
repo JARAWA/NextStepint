@@ -18,7 +18,7 @@ services:
     startCommand: cd josaa-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9
+        value: 3.8.17
 
   # MHTCET Service
   - type: web
@@ -28,4 +28,4 @@ services:
     startCommand: cd mhtcet-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9
+        value: 3.8.17
