@@ -1,0 +1,101 @@
+/* Tablet and larger screens */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        padding: 0 2rem;
+    }
+
+    .search-form {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+    header {
+        padding: 1.5rem;
+    }
+
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    header p {
+        font-size: 1rem;
+    }
+
+    .container {
+        padding: 0 1rem;
+        margin: 1rem auto;
+    }
+
+    .search-section,
+    .results-section,
+    .help-section {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .results-table th,
+    .results-table td {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .help-section ol {
+        margin-left: 1rem;
+    }
+
+    .toast {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    .btn {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .results-summary h2 {
+        font-size: 1.3rem;
+    }
+
+    .results-table {
+        font-size: 0.8rem;
+    }
+
+    .help-section h2 {
+        font-size: 1.3rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    header,
+    .search-section,
+    .help-section,
+    footer,
+    .btn {
+        display: none;
+    }
+
+    .results-section {
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .results-table th,
+    .results-table td {
+        border: 1px solid #000;
+    }
+}
