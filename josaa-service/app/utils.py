@@ -9,9 +9,14 @@ from io import StringIO
 def load_data() -> pd.DataFrame:
     """Load and preprocess the JOSAA data."""
     try:
-        url = "https://raw.githubusercontent.com/JARAWA/NextStepint/refs/heads/main/josaa-service/data/josaa2024_cutoff.csv"
-        response = requests.get(url)
-        response.raise_for_status()
+        # Load data from local file first
+        data_path = Path(__file__).parent.parent / 'data' / 'josaa2024_cutoff.csv'
+        if data_path.exists():
+            df = pd.read_csv(data_path)
+        else
+            url = "https://raw.githubusercontent.com/JARAWA/NextStepint/refs/heads/main/josaa-service/data/josaa2024_cutoff.csv"
+            response = requests.get(url)
+            response.raise_for_status()
         
         df = pd.read_csv(StringIO(response.text))
         df["Opening Rank"] = pd.to_numeric(df["Opening Rank"], errors="coerce").fillna(9999999)
