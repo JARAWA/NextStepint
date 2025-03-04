@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 
 # Version info
 __version__ = "1.0.0"
-__author__ = "Your Name"
-__email__ = "your.email@example.com"
+__author__ = "JARAWA"
+__email__ = "49.jayesh@gmail.com"
 
 # Import main components
 try:
