@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JOSAA College Preference Generator</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/main.css') }}">
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-university"></i> JOSAA College Preference Generator</h1>
+        <p>Generate your personalized college preference list based on JEE rank</p>
+    </header>
+
+    <main class="container">
+        <!-- Search Form -->
+        <section class="search-section">
+            <form method="POST" action="/predict" class="search-form">
+                <div class="form-group">
+                    <label for="jee_rank">Your JEE Rank</label>
+                    <input type="number" 
+                           id="jee_rank" 
+                           name="jee_rank" 
+                           required 
+                           min="1"
+                           value="{{ jee_rank if jee_rank else '' }}"
+                           placeholder="Enter your rank">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category">
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" 
+                                {% if category and category == cat %}selected{% endif %}>
+                            {{ cat }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="college_type">College Type</label>
+                    <select id="college_type" name="college_type">
+                        {% for type in college_types %}
+                        <option value="{{ type }}"
+                                {% if college_type and college_type == type %}selected{% endif %}>
+                            {{ type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="preferred_branch">Preferred Branch</label>
+                    <select id="preferred_branch" name="preferred_branch">
+                        {% for branch in branches %}
+                        <option value="{{ branch }}"
+                                {% if preferred_branch and preferred_branch == branch %}selected{% endif %}>
+                            {{ branch }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="round_no">Round</label>
+                    <select id="round_no" name="round_no">
+                        {% for round in rounds %}
+                        <option value="{{ round }}"
+                                {% if round_no and round_no == round %}selected{% endif %}>
+                            {{ round }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="min_probability">Minimum Probability (%)</label>
+                    <input type="number" 
+                           id="min_probability" 
+                           name="min_probability" 
+                           min="0" 
+                           max="100" 
+                           value="{{ min_probability if min_probability else 30 }}"
+                           step="5">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">
+                        <i class="fas fa-magic"></i> Generate Preferences
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Results Section -->
+        {% if predictions %}
+        <section class="results-section">
+            <!-- Add results display here -->
+        </section>
+        {% endif %}
+
+        <!-- Help Section -->
+        <section class="help-section">
+            <h2><i class="fas fa-question-circle"></i> How to Use</h2>
+            <ol>
+                <li>Enter your JEE rank</li>
+                <li>Select your category</li>
+                <li>Choose college type</li>
+                <li>Select preferred branch (optional)</li>
+                <li>Choose counselling round</li>
+                <li>Set minimum probability threshold</li>
+                <li>Click "Generate Preferences" to get your list</li>
+            </ol>
+            <div class="disclaimer">
+                <p><strong>Note:</strong> This tool uses historical data and should be used for reference only. 
+                Always verify information from official sources.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 JOSAA College Preference Generator. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+</body>
+</html>
