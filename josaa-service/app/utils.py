@@ -13,18 +13,22 @@ def load_data() -> pd.DataFrame:
         data_path = Path(__file__).parent.parent / 'data' / 'josaa2024_cutoff.csv'
         if data_path.exists():
             df = pd.read_csv(data_path)
-        else
-            url = "https://raw.githubusercontent.com/JARAWA/NextStepint/refs/heads/main/josaa-service/data/josaa2024_cutoff.csv"
+        else:
+            # Replace with your actual GitHub repository URL
+            url = "https://raw.githubusercontent.com/YOUR_USERNAME/NextStep/main/josaa-service/data/josaa2024_cutoff.csv"
             response = requests.get(url)
             response.raise_for_status()
+            df = pd.read_csv(StringIO(response.text))
         
-        df = pd.read_csv(StringIO(response.text))
+        # Data preprocessing
         df["Opening Rank"] = pd.to_numeric(df["Opening Rank"], errors="coerce").fillna(9999999)
         df["Closing Rank"] = pd.to_numeric(df["Closing Rank"], errors="coerce").fillna(9999999)
         df["Round"] = df["Round"].astype(str)
+        
+        logger.info(f"Successfully loaded {len(df)} records")
         return df
     except Exception as e:
-        print(f"Error loading data: {e}")
+        logger.error(f"Error loading data: {str(e)}")
         return pd.DataFrame()
 
 def get_unique_branches() -> List[str]:
