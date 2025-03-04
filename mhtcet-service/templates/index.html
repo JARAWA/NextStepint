@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MHTCET College Finder</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/main.css') }}">
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-university"></i> MHTCET College Finder</h1>
+        <p>Find the best engineering colleges based on your MHTCET rank</p>
+    </header>
+
+    <main class="container">
+        <!-- Search Form -->
+        <section class="search-section">
+            <form method="POST" action="/search" class="search-form">
+                <div class="form-group">
+                    <label for="rank">Your MHTCET Rank</label>
+                    <input type="number" 
+                           id="rank" 
+                           name="rank" 
+                           required 
+                           min="1"
+                           value="{{ rank if rank else '' }}"
+                           placeholder="Enter your rank">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category">
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" 
+                                {% if category and category == cat %}selected{% endif %}>
+                            {{ cat }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="quota">Quota</label>
+                    <select id="quota" name="quota">
+                        {% for q in quotas %}
+                        <option value="{{ q }}"
+                                {% if quota and quota == q %}selected{% endif %}>
+                            {{ q }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="branch">Preferred Branch</label>
+                    <select id="branch" name="branch">
+                        {% for b in branches %}
+                        <option value="{{ b }}"
+                                {% if branch and branch == b %}selected{% endif %}>
+                            {{ b }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn primary">
+                        <i class="fas fa-search"></i> Search Colleges
+                    </button>
+                    {% if results %}
+                    <form method="POST" action="/export" class="export-form">
+                        <input type="hidden" name="rank" value="{{ rank }}">
+                        <input type="hidden" name="category" value="{{ category }}">
+                        <input type="hidden" name="quota" value="{{ quota }}">
+                        <input type="hidden" name="branch" value="{{ branch }}">
+                        <button type="submit" class="btn secondary">
+                            <i class="fas fa-download"></i> Export to CSV
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </form>
+        </section>
+
+        <!-- Results Section -->
+        {% if results %}
+        <section class="results-section">
+            <div class="results-summary">
+                <h2>Search Results</h2>
+                <p>Found {{ total_matches }} matches across {{ unique_colleges }} colleges</p>
+                <p>Rank Range: {{ rank_min }} - {{ rank_max }}</p>
+            </div>
+
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>College Code</th>
+                            <th>College Name</th>
+                            <th>Branch</th>
+                            <th>Category</th>
+                            <th>Quota</th>
+                            <th>Cutoff Rank</th>
+                            <th>Percentile</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result.college_code }}</td>
+                            <td>{{ result.college_name }}</td>
+                            <td>{{ result.branch_name }}</td>
+                            <td>{{ result.category }}</td>
+                            <td>{{ result.quota_type }}</td>
+                            <td>{{ result.rank }}</td>
+                            <td>{{ "%.2f"|format(result.percentile) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% elif rank %}
+        <section class="no-results">
+            <p><i class="fas fa-info-circle"></i> No colleges found matching your criteria.</p>
+        </section>
+        {% endif %}
+
+        <!-- Help Section -->
+        <section class="help-section">
+            <h2><i class="fas fa-question-circle"></i> How to Use</h2>
+            <ol>
+                <li>Enter your MHTCET rank</li>
+                <li>Select your category (if applicable)</li>
+                <li>Choose quota type (if applicable)</li>
+                <li>Select preferred branch (optional)</li>
+                <li>Click "Search Colleges" to find matching colleges</li>
+                <li>Use "Export to CSV" to download the results</li>
+            </ol>
+            <div class="disclaimer">
+                <p><strong>Note:</strong> This tool uses historical data and should be used for reference only. 
+                Always verify information from official sources.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 MHTCET College Finder. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+</body>
+</html>
