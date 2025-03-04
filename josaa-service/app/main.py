@@ -1,66 +1,80 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from .models import PredictionInput, PredictionOutput
-from .services import JOSAAService
-from .utils import get_unique_branches
+from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 
-app = FastAPI(
-    title="JOSAA Preference Generator",
-    description="Generate college preference lists for JOSAA counselling",
-    version="1.0.0"
-)
+app = FastAPI(title="JOSAA Preference Generator")
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Setup static files and templates
+static_path = Path(__file__).parent.parent / "static"
+templates_path = Path(__file__).parent.parent / "templates"
 
-# Initialize service
-josaa_service = JOSAAService()
+app.mount("/static", StaticFiles(directory=static_path), name="static")
+templates = Jinja2Templates(directory=templates_path)
 
-@app.get("/")
-async def root():
-    """Root endpoint."""
-    return {"message": "JOSAA Preference Generator API"}
-
-@app.get("/branches")
-async def get_branches():
-    """Get list of available branches."""
-    return {"branches": get_unique_branches()}
-
-@app.post("/predict", response_model=PredictionOutput)
-async def predict_preferences(input_data: PredictionInput):
-    """Generate college preference list."""
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    """Home page route."""
     try:
-        preferences, plot_data = josaa_service.predict_preferences(
-            jee_rank=input_data.jee_rank,
-            category=input_data.category,
-            college_type=input_data.college_type,
-            preferred_branch=input_data.preferred_branch,
-            round_no=input_data.round_no,
-            min_probability=input_data.min_probability
-        )
+        categories = ["OPEN", "OBC-NCL", "SC", "ST", "EWS"]
+        college_types = ["ALL", "IIT", "NIT", "IIIT", "GFTI"]
+        rounds = ["1", "2", "3", "4", "5", "6"]
+        branches = get_unique_branches()
         
-        if not preferences:
-            raise HTTPException(
-                status_code=404,
-                detail="No colleges found matching your criteria"
-            )
-            
-        return PredictionOutput(
-            preferences=preferences,
-            plot_data=plot_data
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "categories": categories,
+                "college_types": college_types,
+                "rounds": rounds,
+                "branches": branches
+            }
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
+        logger.error(f"Error in home route: {str(e)}")
+        return templates.TemplateResponse(
+            "error.html",
+            {"request": request, "error": "Application is not properly initialized"}
         )
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.post("/predict")
+async def predict(
+    request: Request,
+    jee_rank: int = Form(...),
+    category: str = Form(...),
+    college_type: str = Form(...),
+    preferred_branch: str = Form(...),
+    round_no: str = Form(...),
+    min_probability: float = Form(30.0)
+):
+    """Generate predictions based on form input."""
+    try:
+        predictions = predict_preferences(
+            jee_rank=jee_rank,
+            category=category,
+            college_type=college_type,
+            preferred_branch=preferred_branch,
+            round_no=round_no,
+            min_probability=min_probability
+        )
+        
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "predictions": predictions,
+                "jee_rank": jee_rank,
+                "category": category,
+                "college_type": college_type,
+                "preferred_branch": preferred_branch,
+                "round_no": round_no,
+                "min_probability": min_probability
+            }
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "error.html",
+            {"request": request, "error": str(e)}
+        )
