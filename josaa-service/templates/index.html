@@ -15,6 +15,22 @@
     <header>
         <h1><i class="fas fa-university"></i> JOSAA College Preference Generator</h1>
         <p>Generate your personalized college preference list based on JEE rank</p>
+        
+        <!-- User Info / Auth Buttons -->
+        <div class="auth-section">
+            {% if user %}
+            <div class="user-info">
+                <span>Welcome, {{ user.full_name }}</span>
+                <button onclick="handleLogout()" class="btn secondary">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+            {% else %}
+            <button onclick="showAuthModal()" class="btn primary">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+            {% endif %}
+        </div>
     </header>
 
     <main class="container">
@@ -34,7 +50,7 @@
 
                 <div class="form-group">
                     <label for="category">Category</label>
-                    <select id="category" name="category">
+                    <select id="category" name="category" required>
                         {% for cat in categories %}
                         <option value="{{ cat }}" 
                                 {% if category and category == cat %}selected{% endif %}>
@@ -46,7 +62,7 @@
 
                 <div class="form-group">
                     <label for="college_type">College Type</label>
-                    <select id="college_type" name="college_type">
+                    <select id="college_type" name="college_type" required>
                         {% for type in college_types %}
                         <option value="{{ type }}"
                                 {% if college_type and college_type == type %}selected{% endif %}>
@@ -70,7 +86,7 @@
 
                 <div class="form-group">
                     <label for="round_no">Round</label>
-                    <select id="round_no" name="round_no">
+                    <select id="round_no" name="round_no" required>
                         {% for round in rounds %}
                         <option value="{{ round }}"
                                 {% if round_no and round_no == round %}selected{% endif %}>
@@ -102,7 +118,49 @@
         <!-- Results Section -->
         {% if predictions %}
         <section class="results-section">
-            <!-- Add results display here -->
+            <div class="results-header">
+                <h2>College Preferences</h2>
+                <button onclick="exportToCSV()" class="btn secondary">
+                    <i class="fas fa-download"></i> Export to CSV
+                </button>
+            </div>
+
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Preference</th>
+                            <th>Institute</th>
+                            <th>College Type</th>
+                            <th>Location</th>
+                            <th>Branch</th>
+                            <th>Opening Rank</th>
+                            <th>Closing Rank</th>
+                            <th>Probability (%)</th>
+                            <th>Chances</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pred in predictions %}
+                        <tr>
+                            <td>{{ pred.Preference }}</td>
+                            <td>{{ pred.Institute }}</td>
+                            <td>{{ pred.College_Type }}</td>
+                            <td>{{ pred.Location }}</td>
+                            <td>{{ pred.Branch }}</td>
+                            <td>{{ pred.Opening_Rank }}</td>
+                            <td>{{ pred.Closing_Rank }}</td>
+                            <td>{{ "%.2f"|format(pred.Admission_Probability) }}</td>
+                            <td>{{ pred.Admission_Chances }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if plot_data %}
+            <div id="probability-plot" class="plot-container"></div>
+            {% endif %}
         </section>
         {% endif %}
 
@@ -110,9 +168,9 @@
         <section class="help-section">
             <h2><i class="fas fa-question-circle"></i> How to Use</h2>
             <ol>
-                <li>Enter your JEE rank</li>
+                <li>Enter your JEE rank (Advanced for IITs, Main for others)</li>
                 <li>Select your category</li>
-                <li>Choose college type</li>
+                <li>Choose college type (IIT/NIT/IIIT/GFTI)</li>
                 <li>Select preferred branch (optional)</li>
                 <li>Choose counselling round</li>
                 <li>Set minimum probability threshold</li>
@@ -125,10 +183,64 @@
         </section>
     </main>
 
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="remember"> Remember me
+                    </label>
+                </div>
+                <button type="submit" class="btn primary">Login</button>
+                <p>Don't have an account? <a href="#" onclick="toggleAuthForm('register')">Register</a></p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form">
+                <h2><i class="fas fa-user-plus"></i> Create Account</h2>
+                <div class="form-group">
+                    <label for="registerName">Full Name</label>
+                    <input type="text" id="registerName" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" name="password" required>
+                </div>
+                <button type="submit" class="btn primary">Register</button>
+                <p>Already have an account? <a href="#" onclick="toggleAuthForm('login')">Login</a></p>
+            </form>
+        </div>
+    </div>
+
     <footer>
         <p>&copy; 2024 JOSAA College Preference Generator. All rights reserved.</p>
     </footer>
 
+    <!-- Scripts -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
     <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+    {% if plot_data %}
+    <script>
+        Plotly.newPlot('probability-plot', {{ plot_data | safe }});
+    </script>
+    {% endif %}
 </body>
 </html>
