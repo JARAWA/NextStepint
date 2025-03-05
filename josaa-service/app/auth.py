@@ -12,8 +12,13 @@ logger = logging.getLogger(__name__)
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# JWT settings
-SECRET_KEY = "your-secret-key-here"  # Change this to a secure secret key
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    # Generate a secure random key if not provided
+    import secrets
+    SECRET_KEY = secrets.token_hex(32)
+    print(f"Warning: Using generated SECRET_KEY: {SECRET_KEY}")
+    print("Please set JWT_SECRET_KEY environment variable for production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
