@@ -3,6 +3,8 @@
     --primary-dark: #005555;
     --primary-light: #008080;
     --secondary-color: #D4AF37;
+    --secondary-dark: #B8960C;
+    --secondary-light: #FFD700;
     --background-color: #f8f9fa;
     --text-color: #333333;
     --border-color: #dee2e6;
@@ -31,6 +33,7 @@ header {
     padding: 2.5rem;
     text-align: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
 header h1 {
@@ -45,6 +48,19 @@ header h1 {
 header p {
     font-size: 1.2rem;
     opacity: 0.9;
+}
+
+.auth-section {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
 }
 
 /* Container */
@@ -107,6 +123,9 @@ header p {
 }
 
 .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
@@ -114,36 +133,12 @@ header p {
 
 .results-header h2 {
     color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.results-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.stat-card {
-    background: var(--background-color);
-    padding: 1rem;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.stat-card h3 {
-    color: var(--primary-color);
-    font-size: 1.8rem;
-    margin-bottom: 0.3rem;
-}
-
-.stat-card p {
-    color: #666;
-    font-size: 0.9rem;
+    margin: 0;
 }
 
 .results-table-container {
     overflow-x: auto;
+    margin-bottom: 2rem;
 }
 
 .results-table {
@@ -169,17 +164,64 @@ header p {
     background-color: rgba(0, 107, 107, 0.05);
 }
 
-/* Probability Indicators */
-.probability-high {
-    color: var(--success-color);
+/* Plot Container */
+.plot-container {
+    width: 100%;
+    height: 400px;
+    margin-top: 2rem;
 }
 
-.probability-medium {
-    color: var(--warning-color);
+/* Auth Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
 }
 
-.probability-low {
-    color: var(--error-color);
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+}
+
+.close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: var(--primary-color);
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-form h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Buttons */
@@ -209,6 +251,14 @@ header p {
 .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn.primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn.secondary:hover {
+    background-color: var(--secondary-dark);
 }
 
 /* Help Section */
@@ -253,6 +303,41 @@ footer {
     margin-top: 3rem;
 }
 
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem 2rem;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+.toast.success {
+    border-left: 4px solid var(--success-color);
+}
+
+.toast.error {
+    border-left: 4px solid var(--error-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
 /* Loading State */
 .loading {
     opacity: 0.7;
@@ -277,55 +362,4 @@ footer {
     to {
         transform: rotate(360deg);
     }
-}
-/* Auth Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-    background-color: white;
-    margin: 10% auto;
-    padding: 2rem;
-    border-radius: 10px;
-    max-width: 400px;
-    position: relative;
-}
-
-.close {
-    position: absolute;
-    right: 1rem;
-    top: 0.5rem;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-.auth-form {
-    display: none;
-}
-
-.auth-form.active {
-    display: block;
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-/* Add these to your existing button styles */
-.btn.secondary {
-    background-color: var(--secondary-color);
-}
-
-.btn.secondary:hover {
-    background-color: var(--secondary-dark);
 }
