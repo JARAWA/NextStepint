@@ -38,6 +38,18 @@
         <section class="search-section">
             <form method="POST" action="/predict" class="search-form">
                 <div class="form-group">
+                    <label for="college_type">College Type</label>
+                    <select id="college_type" name="college_type" required>
+                        {% for type in college_types %}
+                        <option value="{{ type }}"
+                                {% if college_type and college_type == type %}selected{% endif %}>
+                            {{ type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div> 
+                
+                <div class="form-group">
                     <label for="jee_rank">Your JEE Rank</label>
                     <input type="number" 
                            id="jee_rank" 
@@ -59,19 +71,7 @@
                         {% endfor %}
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="college_type">College Type</label>
-                    <select id="college_type" name="college_type" required>
-                        {% for type in college_types %}
-                        <option value="{{ type }}"
-                                {% if college_type and college_type == type %}selected{% endif %}>
-                            {{ type }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
+              
                 <div class="form-group">
                     <label for="preferred_branch">Preferred Branch</label>
                     <select id="preferred_branch" name="preferred_branch">
