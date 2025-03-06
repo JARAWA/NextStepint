@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Optional, Dict
+import os
 import jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
