@@ -78,11 +78,11 @@ async def startup_event():
         logger.error(f"Startup checks failed: {str(e)}")
         raise
 
-@app.get("/", response_class=HTMLResponse)
+'''@app.get("/", response_class=HTMLResponse)
 async def home(
     request: Request,
     current_user: Optional[User] = Depends(get_current_user)
-):
+):'''
     """Home page route."""
     try:
         categories = ["OPEN", "OBC-NCL", "SC", "ST", "EWS"]
