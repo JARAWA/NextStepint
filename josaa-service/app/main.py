@@ -48,7 +48,7 @@ app.mount("/static", StaticFiles(directory=static_path), name="static")
 templates = Jinja2Templates(directory=templates_path)
 
 # Authentication dependency
-async def get_current_user(access_token: str = Cookie(None)) -> Optional[User]:
+''' async def get_current_user(access_token: str = Cookie(None)) -> Optional[User]:
     if not access_token:
         return None
     payload = verify_token(access_token)
@@ -57,7 +57,7 @@ async def get_current_user(access_token: str = Cookie(None)) -> Optional[User]:
     email = payload.get("sub")
     if not email:
         return None
-    return await authenticate_user(email, None)
+    return await authenticate_user(email, None)'''
 
 @app.on_event("startup")
 async def startup_event():
