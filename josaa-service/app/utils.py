@@ -7,7 +7,7 @@ import plotly.express as px
 import requests
 from io import StringIO
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 # Configure logging
 logging.basicConfig(
@@ -16,9 +16,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def load_data() -> pd.DataFrame:
+def load_data(force_reload: bool = False) -> pd.DataFrame:
     """
     Load and preprocess the JOSAA data from local or remote source.
+    
+    Args:
+        force_reload (bool, optional): Force reloading of data. Defaults to False.
     
     Returns:
         pd.DataFrame: Preprocessed JOSAA counseling data
@@ -38,10 +41,8 @@ def load_data() -> pd.DataFrame:
             response.raise_for_status()
             df = pd.read_csv(StringIO(response.text))
         
-        # Data preprocessing
-        df["Opening Rank"] = pd.to_numeric(df["Opening Rank"], errors="coerce").fillna(9999999)
-        df["Closing Rank"] = pd.to_numeric(df["Closing Rank"], errors="coerce").fillna(9999999)
-        df["Round"] = df["Round"].astype(str)
+        # Data preprocessing and validation
+        df = preprocess_dataframe(df)
         
         logger.info(f"Successfully loaded {len(df)} records")
         return df
@@ -49,6 +50,47 @@ def load_data() -> pd.DataFrame:
     except Exception as e:
         logger.error(f"Error loading data: {str(e)}", exc_info=True)
         return pd.DataFrame()
+
+def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Preprocess and clean the DataFrame.
+    
+    Args:
+        df (pd.DataFrame): Input DataFrame
+    
+    Returns:
+        pd.DataFrame: Preprocessed DataFrame
+    """
+    try:
+        # Convert rank columns to numeric
+        rank_columns = ['Opening Rank', 'Closing Rank']
+        for col in rank_columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(9999999)
+        
+        # Ensure Round is string
+        df['Round'] = df['Round'].astype(str)
+        
+        # Additional data cleaning
+        df['Institute'] = df['Institute'].fillna('Unknown')
+        df['Academic Program Name'] = df['Academic Program Name'].fillna('Unknown')
+        df['Category'] = df['Category'].fillna('Unknown')
+        
+        # Validate required columns
+        required_columns = [
+            'Institute', 'College Type', 'Location', 
+            'Academic Program Name', 'Quota', 'Category', 
+            'Gender', 'Opening Rank', 'Closing Rank', 'Round'
+        ]
+        
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            logger.warning(f"Missing columns: {missing_columns}")
+        
+        return df
+    
+    except Exception as e:
+        logger.error(f"DataFrame preprocessing error: {str(e)}", exc_info=True)
+        return df
 
 def get_unique_branches() -> List[str]:
     """
@@ -71,9 +113,13 @@ def get_unique_branches() -> List[str]:
         logger.error(f"Error getting unique branches: {str(e)}", exc_info=True)
         return ["All"]
 
-def calculate_admission_probability(rank: int, opening_rank: float, closing_rank: float) -> float:
+def calculate_admission_probability(
+    rank: int, 
+    opening_rank: float, 
+    closing_rank: float
+) -> float:
     """
-    Calculate admission probability using a hybrid approach.
+    Calculate admission probability using a sophisticated hybrid approach.
     
     Args:
         rank (int): Candidate's JEE rank
@@ -84,12 +130,23 @@ def calculate_admission_probability(rank: int, opening_rank: float, closing_rank
         float: Admission probability percentage
     """
     try:
+        # Handle edge cases
+        if not all(isinstance(x, (int, float)) for x in [rank, opening_rank, closing_rank]):
+            logger.warning(f"Invalid input types: {type(rank)}, {type(opening_rank)}, {type(closing_rank)}")
+            return 0.0
+        
+        # Prevent division by zero
+        if opening_rank == closing_rank:
+            return 50.0 if rank <= opening_rank else 0.0
+        
         # Logistic function calculation
-        M = (opening_rank + closing_rank) / 2
-        S = max((closing_rank - opening_rank) / 10, 1)
-        logistic_prob = 1 / (1 + math.exp((rank - M) / S)) * 100
-
-        # Piece-wise calculation
+        midpoint = (opening_rank + closing_rank) / 2
+        scale = max((closing_rank - opening_rank) / 10, 1)
+        
+        # Logistic probability
+        logistic_prob = 1 / (1 + math.exp((rank - midpoint) / scale)) * 100
+        
+        # Piece-wise probability calculation
         if rank < opening_rank:
             improvement = (opening_rank - rank) / opening_rank
             piece_wise_prob = 99.0 if improvement >= 0.5 else 96 + (improvement * 6)
@@ -113,7 +170,7 @@ def calculate_admission_probability(rank: int, opening_rank: float, closing_rank
             piece_wise_prob = 5.0
         else:
             piece_wise_prob = 0.0
-
+        
         # Combine probabilities
         if rank < opening_rank:
             improvement = (opening_rank - rank) / opening_rank
@@ -122,7 +179,7 @@ def calculate_admission_probability(rank: int, opening_rank: float, closing_rank
             final_prob = (logistic_prob * 0.7 + piece_wise_prob * 0.3)
         else:
             final_prob = 0.0 if rank > closing_rank + 100 else min(logistic_prob, 5)
-
+        
         return round(max(min(final_prob, 100), 0), 2)
     
     except Exception as e:
@@ -140,6 +197,9 @@ def get_admission_chances(probability: float) -> str:
         str: Admission chance description
     """
     try:
+        if not isinstance(probability, (int, float)):
+            raise ValueError("Probability must be a number")
+        
         if probability >= 95:
             return "Very High Chance"
         elif probability >= 80:
@@ -182,18 +242,20 @@ def predict_preferences(
         # Load data
         df = load_data()
         
-        # Filter data based on input parameters
+        # Create a copy of the DataFrame
         filtered_df = df.copy()
         
+        # Filtering logic
         if category != "ALL":
             filtered_df = filtered_df[filtered_df["Category"] == category]
         
         if college_type != "ALL":
-            filtered_df = filtered_df[filtered_df["Institute Type"] == college_type]
+            filtered_df = filtered_df[filtered_df["College Type"] == college_type]
         
         if preferred_branch != "All":
             filtered_df = filtered_df[filtered_df["Academic Program Name"] == preferred_branch]
         
+        # Round filtering
         filtered_df = filtered_df[filtered_df["Round"] == round_no]
         
         # Calculate admission probabilities
@@ -208,7 +270,12 @@ def predict_preferences(
             if prob >= min_probability:
                 prediction = {
                     "institute": row["Institute"],
+                    "college_type": row["College Type"],
+                    "location": row["Location"],
                     "academic_program": row["Academic Program Name"],
+                    "quota": row["Quota"],
+                    "category": row["Category"],
+                    "gender": row["Gender"],
                     "admission_probability": prob,
                     "admission_chances": get_admission_chances(prob),
                     "opening_rank": row["Opening Rank"],
@@ -228,7 +295,7 @@ def predict_preferences(
         }
     
     except Exception as e:
-        logger.error(f"Prediction error: {str(e)}", exc_info=True)
+        logger.error(f"Comprehensive prediction error: {str(e)}", exc_info=True)
         return {"predictions": [], "plot_data": {}}
 
 def create_probability_plot(predictions: List[Dict]) -> Dict:
@@ -269,3 +336,18 @@ def create_probability_plot(predictions: List[Dict]) -> Dict:
     except Exception as e:
         logger.error(f"Plot creation error: {str(e)}", exc_info=True)
         return {}
+
+# Optional: Add caching mechanism for expensive computations
+def cache_data(func):
+    """
+    Simple caching decorator to store and reuse expensive computation results.
+    """
+    cache = {}
+    
+    def wrapper(*args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key not in cache:
+            cache[key] = func(*args, **kwargs)
+        return cache[key]
+    
+    return wrapper
