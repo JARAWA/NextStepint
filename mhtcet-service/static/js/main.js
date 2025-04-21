@@ -69,19 +69,51 @@ function validateForm(form) {
     return true;
 }
 
-// Table Sorting
-function setupTableSorting() {
-    const table = document.querySelector('.results-table');
-    if (table) {
-        const headers = table.querySelectorAll('th');
-        headers.forEach((header, index) => {
-            if (header.classList.contains('sortable')) {
-                header.addEventListener('click', () => {
-                    sortTable(table, index);
-                });
-            }
-        });
-    }
+function sortTable() {
+    const field = document.getElementById('sortField').value;
+    const order = document.getElementById('sortOrder').value;
+    const tbody = document.querySelector('.results-table tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    rows.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch(field) {
+            case 'college_name':
+                aVal = a.querySelector('td:nth-child(1) .cell-main').textContent;
+                bVal = b.querySelector('td:nth-child(1) .cell-main').textContent;
+                break;
+            case 'branch_name':
+                aVal = a.querySelector('td:nth-child(2) .cell-main').textContent;
+                bVal = b.querySelector('td:nth-child(2) .cell-main').textContent;
+                break;
+            case 'category':
+                aVal = a.querySelector('td:nth-child(3) .cell-main').textContent;
+                bVal = b.querySelector('td:nth-child(3) .cell-main').textContent;
+                break;
+            case 'quota_type':
+                aVal = a.querySelector('td:nth-child(4) .cell-main').textContent;
+                bVal = b.querySelector('td:nth-child(4) .cell-main').textContent;
+                break;
+            case 'rank':
+                aVal = parseInt(a.querySelector('td:nth-child(5) .cell-main').textContent.replace('Rank: ', ''));
+                bVal = parseInt(b.querySelector('td:nth-child(5) .cell-main').textContent.replace('Rank: ', ''));
+                break;
+            case 'percentile':
+                aVal = parseFloat(a.querySelector('td:nth-child(5) .cell-sub').textContent.replace('Percentile: ', ''));
+                bVal = parseFloat(b.querySelector('td:nth-child(5) .cell-sub').textContent.replace('Percentile: ', ''));
+                break;
+        }
+
+        if (order === 'asc') {
+            return aVal > bVal ? 1 : -1;
+        } else {
+            return aVal < bVal ? 1 : -1;
+        }
+    });
+
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
 }
 
 function sortTable(table, column) {
