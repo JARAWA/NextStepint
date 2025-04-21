@@ -12,6 +12,29 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/css/main.css') }}">
 </head>
 <body>
+        <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <img src="{{ url_for('static', path='/images/nextstep_logo.jpeg') }}" alt="Logo" class="h-8 w-auto">
+                        <span class="text-xl font-bold">NextStep</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Dark Mode Toggle -->
+                    <button 
+                        @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                    >
+                        <i x-show="!darkMode" class="fas fa-moon"></i>
+                        <i x-show="darkMode" class="fas fa-sun"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
     <header>
         <h1><i class="fas fa-university"></i> MHTCET College Finder</h1>
         <p>Find the best engineering colleges based on your MHTCET rank</p>
