@@ -87,49 +87,104 @@
             </form>
         </section>
 
-        <!-- Results Section -->
-        {% if results %}
-        <section class="results-section">
-            <div class="results-summary">
-                <h2>Search Results</h2>
-                <p>Found {{ total_matches }} matches across {{ unique_colleges }} colleges</p>
-                <p>Rank Range: {{ rank_min }} - {{ rank_max }}</p>
-            </div>
+<!-- Results Section -->
+{% if results %}
+<section class="results-section">
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Matches</div>
+            <div class="stat-value">{{ total_matches }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Rank Range</div>
+            <div class="stat-value">{{ rank_min }} - {{ rank_max }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Unique Colleges</div>
+            <div class="stat-value">{{ unique_colleges }}</div>
+        </div>
+    </div>
 
-            <div class="results-table-container">
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>College Code</th>
-                            <th>College Name</th>
-                            <th>Branch</th>
-                            <th>Category</th>
-                            <th>Quota</th>
-                            <th>Cutoff Rank</th>
-                            <th>Percentile</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for result in results %}
-                        <tr>
-                            <td>{{ result.college_code }}</td>
-                            <td>{{ result.college_name }}</td>
-                            <td>{{ result.branch_name }}</td>
-                            <td>{{ result.category }}</td>
-                            <td>{{ result.quota_type }}</td>
-                            <td>{{ result.rank }}</td>
-                            <td>{{ "%.2f"|format(result.percentile) }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-        {% elif rank %}
-        <section class="no-results">
-            <p><i class="fas fa-info-circle"></i> No colleges found matching your criteria.</p>
-        </section>
-        {% endif %}
+    <!-- Controls -->
+    <div class="table-controls">
+        <div class="sort-controls">
+            <label>Sort by:</label>
+            <select id="sortField">
+                <option value="college_name">College Name</option>
+                <option value="branch_name">Branch Name</option>
+                <option value="category">Category</option>
+                <option value="quota_type">Quota</option>
+                <option value="rank">Rank</option>
+                <option value="percentile">Percentile</option>
+            </select>
+            <select id="sortOrder">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+            <button onclick="sortTable()" class="btn secondary">
+                <i class="fas fa-sort"></i> Sort
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="results-table-container">
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>
+                        College Details
+                        <div class="th-subtitle">Name & Code</div>
+                    </th>
+                    <th>
+                        Branch Details
+                        <div class="th-subtitle">Name & Code</div>
+                    </th>
+                    <th>
+                        Category Details
+                        <div class="th-subtitle">Name & Code</div>
+                    </th>
+                    <th>
+                        Quota Details
+                        <div class="th-subtitle">Type & Allocation</div>
+                    </th>
+                    <th>
+                        Cutoff Details
+                        <div class="th-subtitle">Rank & Percentile</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td>
+                        <div class="cell-main">{{ result.college_name }}</div>
+                        <div class="cell-sub">Code: {{ result.college_code }}</div>
+                    </td>
+                    <td>
+                        <div class="cell-main">{{ result.branch_name }}</div>
+                        <div class="cell-sub">Code: {{ result.branch_code }}</div>
+                    </td>
+                    <td>
+                        <div class="cell-main">{{ result.category }}</div>
+                        <div class="cell-sub">Code: {{ result.category_code }}</div>
+                    </td>
+                    <td>
+                        <div class="cell-main">{{ result.quota_type }}</div>
+                        <div class="cell-sub">{{ result.allocation_type }}</div>
+                    </td>
+                    <td>
+                        <div class="cell-main">Rank: {{ result.rank }}</div>
+                        <div class="cell-sub">Percentile: {{ "%.2f"|format(result.percentile|float) }}</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
 
         <!-- Help Section -->
         <section class="help-section">
