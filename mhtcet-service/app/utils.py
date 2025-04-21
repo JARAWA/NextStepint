@@ -93,7 +93,7 @@ class DataManager:
                        f"quota={quota}, branch={branch}")
 
             # Create base mask for rank range
-            mask = (self.df['rank'] >= rank - rank_range) & (self.df['rank'] <= rank + rank_range)
+            mask = (self.df['rank'] >= rank - 1000) & (self.df['rank'] <= rank + 3000)
 
             # Apply additional filters
             if category != "All":
