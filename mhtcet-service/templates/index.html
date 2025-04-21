@@ -12,32 +12,28 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/css/main.css') }}">
 </head>
 <body>
-        <!-- Navigation -->
-    <nav class="bg-white dark:bg-gray-800 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <a href="/" class="flex items-center space-x-2">
-                        <img src="{{ url_for('static', path='/images/nextstep_logo.jpeg') }}" alt="Logo" class="h-8 w-auto">
-                        <span class="text-xl font-bold">NextStep</span>
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <!-- Dark Mode Toggle -->
-                    <button 
-                        @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
-                        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-                    >
-                        <i x-show="!darkMode" class="fas fa-moon"></i>
-                        <i x-show="darkMode" class="fas fa-sun"></i>
-                    </button>
-                </div>
+    <!-- Removed separate navigation bar and integrated into header -->
+    <header>
+        <div class="header-container">
+            <div class="logo-section">
+                <img src="{{ url_for('static', path='/images/nextstep_logo.jpeg') }}" alt="Logo" class="header-logo">
+                <span class="logo-text">NextStep</span>
+            </div>
+            <div class="header-content">
+                <h1><i class="fas fa-university"></i> MHTCET College Finder</h1>
+                <p>Find the best engineering colleges based on your MHTCET rank</p>
+            </div>
+            <div class="header-actions">
+                <!-- Dark Mode Toggle -->
+                <button 
+                    @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                    class="dark-mode-toggle"
+                >
+                    <i x-show="!darkMode" class="fas fa-moon"></i>
+                    <i x-show="darkMode" class="fas fa-sun"></i>
+                </button>
             </div>
         </div>
-    </nav>
-    <header>
-        <h1><i class="fas fa-university"></i> MHTCET College Finder</h1>
-        <p>Find the best engineering colleges based on your MHTCET rank</p>
     </header>
 
     <main class="container">
@@ -96,15 +92,10 @@
                         <i class="fas fa-search"></i> Search Colleges
                     </button>
                     {% if results %}
-                    <form method="POST" action="/export" class="export-form">
-                        <input type="hidden" name="rank" value="{{ rank }}">
-                        <input type="hidden" name="category" value="{{ category }}">
-                        <input type="hidden" name="quota" value="{{ quota }}">
-                        <input type="hidden" name="branch" value="{{ branch }}">
-                        <button type="submit" class="btn secondary">
-                            <i class="fas fa-download"></i> Export to CSV
-                        </button>
-                    </form>
+                    <!-- Changed form action to /export-excel -->
+                    <button type="button" id="exportExcel" class="btn secondary">
+                        <i class="fas fa-download"></i> Export to Excel
+                    </button>
                     {% endif %}
                 </div>
             </form>
@@ -153,7 +144,7 @@
 
     <!-- Results Table -->
     <div class="results-table-container">
-        <table class="results-table">
+        <table class="results-table" id="resultsTable">
             <thead>
                 <tr>
                     <th>
@@ -218,7 +209,7 @@
                 <li>Choose quota type (if applicable)</li>
                 <li>Select preferred branch (optional)</li>
                 <li>Click "Search Colleges" to find matching colleges</li>
-                <li>Use "Export to CSV" to download the results</li>
+                <li>Click "Export to Excel" to download the results in Excel format</li>
             </ol>
             <div class="disclaimer">
                 <p><strong>Note:</strong> This tool uses historical data and should be used for reference only. 
@@ -230,6 +221,14 @@
     <footer>
         <p>&copy; 2024 MHTCET College Finder. All rights reserved.</p>
     </footer>
+
+    <!-- Hidden form for Excel export -->
+    <form id="exportForm" method="POST" action="/export-excel" style="display: none;">
+        <input type="hidden" name="rank" value="{{ rank }}">
+        <input type="hidden" name="category" value="{{ category }}">
+        <input type="hidden" name="quota" value="{{ quota }}">
+        <input type="hidden" name="branch" value="{{ branch }}">
+    </form>
 
     <script src="{{ url_for('static', path='/js/main.js') }}"></script>
 </body>
