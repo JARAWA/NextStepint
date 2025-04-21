@@ -41,17 +41,16 @@ header {
     gap: 1rem;
 }
 
-.logo-section {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.logo-img {
+    max-height: 120px;
+    width: auto;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
 }
 
-.header-logo {
-    width: 32px;
-    height: 32px;
-    object-fit: cover;
-    border-radius: 4px;
+.logo-img:hover {
+    transform: scale(1.05);
 }
 
 .logo-text {
