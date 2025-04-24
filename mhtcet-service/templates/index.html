@@ -114,18 +114,18 @@
                 <option value="college_name">College Name</option>
                 <option value="branch_name">Branch Name</option>
                 <option value="category">Category</option>
-                <option value="quota_type">Quota</option>
+                <option value="quota_type">Quota Type</option>
                 <option value="rank">Rank</option>
-                <option value="percentile">Percentile</option>
             </select>
             <select id="sortOrder">
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
             </select>
-            <button onclick="sortTable()" class="btn secondary">
-                <i class="fas fa-sort"></i> Sort
-            </button>
+            <button id="sortButton" class="btn secondary">Sort</button>
         </div>
+        <button id="exportExcel" class="btn primary">
+            <i class="fas fa-download"></i> Export Results
+        </button>
     </div>
 
     <!-- Results Table -->
@@ -134,24 +134,24 @@
             <thead>
                 <tr>
                     <th>
-                        College Details
-                        <div class="th-subtitle">Name & Code</div>
+                        COLLEGE DETAILS
+                        <div class="th-subtitle">NAME & CODE</div>
                     </th>
                     <th>
-                        Branch Details
-                        <div class="th-subtitle">Name & Code</div>
+                        BRANCH DETAILS
+                        <div class="th-subtitle">NAME & CODE</div>
                     </th>
                     <th>
-                        Category Details
-                        <div class="th-subtitle">Name & Code</div>
+                        CATEGORY DETAILS
+                        <div class="th-subtitle">NAME & CODE</div>
                     </th>
                     <th>
-                        Quota Details
-                        <div class="th-subtitle">Type & Allocation</div>
+                        QUOTA DETAILS
+                        <div class="th-subtitle">TYPE & ALLOCATION</div>
                     </th>
                     <th>
-                        Cutoff Details
-                        <div class="th-subtitle">Rank & Percentile</div>
+                        CUTOFF DETAILS
+                        <div class="th-subtitle">RANK & PERCENTILE</div>
                     </th>
                 </tr>
             </thead>
