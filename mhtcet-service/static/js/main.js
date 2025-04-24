@@ -69,10 +69,38 @@ function validateForm(form) {
     return true;
 }
 
+// Table Sorting
+function setupTableSorting() {
+    const sortControls = document.querySelector('#sortControls');
+    if (sortControls) {
+        const sortFieldSelect = document.getElementById('sortField');
+        const sortOrderSelect = document.getElementById('sortOrder');
+        
+        if (sortFieldSelect && sortOrderSelect) {
+            sortFieldSelect.addEventListener('change', sortTable);
+            sortOrderSelect.addEventListener('change', sortTable);
+        }
+        
+        // Also setup column header sorting if present
+        const table = document.querySelector('.results-table');
+        if (table) {
+            table.querySelectorAll('th').forEach((th, index) => {
+                th.addEventListener('click', () => sortTable(table, index));
+            });
+        }
+    }
+}
+
 function sortTable() {
-    const field = document.getElementById('sortField').value;
-    const order = document.getElementById('sortOrder').value;
+    // This handles the dropdown-based sorting
+    const field = document.getElementById('sortField')?.value;
+    const order = document.getElementById('sortOrder')?.value;
+    
+    if (!field || !order) return;
+    
     const tbody = document.querySelector('.results-table tbody');
+    if (!tbody) return;
+    
     const rows = Array.from(tbody.querySelectorAll('tr'));
 
     rows.sort((a, b) => {
@@ -114,10 +142,21 @@ function sortTable() {
 
     tbody.innerHTML = '';
     rows.forEach(row => tbody.appendChild(row));
+    
+    // Enable export button after sorting is complete
+    const exportButton = document.getElementById('exportExcel');
+    if (exportButton) {
+        exportButton.disabled = false;
+    }
 }
 
+// Overloaded sortTable function for column header click sorting
 function sortTable(table, column) {
+    if (!table || column === undefined) return;
+    
     const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    
     const rows = Array.from(tbody.querySelectorAll('tr'));
     const isNumeric = column === 5 || column === 6; // Rank and Percentile columns
 
@@ -153,6 +192,12 @@ function sortTable(table, column) {
     // Update table
     tbody.innerHTML = '';
     rows.forEach(row => tbody.appendChild(row));
+    
+    // Enable export button after sorting is complete
+    const exportButton = document.getElementById('exportExcel');
+    if (exportButton) {
+        exportButton.disabled = false;
+    }
 }
 
 // Filtering and Search
@@ -178,13 +223,26 @@ function filterTable(query) {
     });
 }
 
-// Export Handling
+// Export Handling - Enhanced with Excel Export
 function setupExportHandling() {
+    const exportButton = document.getElementById('exportExcel');
+    if (exportButton) {
+        exportButton.addEventListener('click', handleDownload);
+    }
+    
+    // For backward compatibility, also handle the CSV export form if it exists
     const exportForm = document.querySelector('.export-form');
     if (exportForm) {
         exportForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Check if we want to use Excel export or fallback to CSV
+            if (document.getElementById('exportExcel')) {
+                handleDownload();
+                return;
+            }
+            
+            // Legacy CSV export code
             showLoading();
             
             try {
@@ -220,6 +278,53 @@ function setupExportHandling() {
     }
 }
 
+// Handle the Excel download functionality
+function handleDownload() {
+    showLoading();
+    
+    try {
+        // Get the current search parameters from the form
+        const searchForm = document.querySelector('.search-form');
+        const formData = new FormData(searchForm);
+        
+        // Send request to export endpoint
+        fetch('/export-excel', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // Create and click a temporary download link
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'college_results.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showToast('Export completed successfully', 'success');
+        })
+        .catch(error => {
+            console.error('Export error:', error);
+            showToast('Failed to export results. Please try again.', 'error');
+        })
+        .finally(() => {
+            hideLoading();
+        });
+    } catch (error) {
+        console.error('Export setup error:', error);
+        showToast('Failed to prepare export. Please try again.', 'error');
+        hideLoading();
+    }
+}
+
 // Responsive Handling
 function setupResponsiveHandling() {
     const table = document.querySelector('.results-table');
@@ -240,15 +345,54 @@ function makeTableResponsive(table) {
     }
 }
 
-// Loading State
+// UI State Management - Enhanced loading functions
+function setLoadingState(isLoading) {
+    const generateBtn = document.querySelector('.search-form button[type="submit"]');
+    const downloadBtn = document.getElementById('exportExcel');
+    const loadingOverlay = document.getElementById('loading-overlay') || document.querySelector('.loading-overlay');
+    
+    if (generateBtn) {
+        const spinner = generateBtn.querySelector('.spinner-border');
+        const buttonContent = generateBtn.querySelector('.button-content');
+        
+        if (isLoading) {
+            generateBtn.disabled = true;
+            if (downloadBtn) downloadBtn.disabled = true;
+            
+            if (loadingOverlay) loadingOverlay.classList.remove('d-none');
+            
+            if (spinner) spinner.classList.remove('d-none');
+            if (buttonContent) buttonContent.classList.add('d-none');
+        } else {
+            generateBtn.disabled = false;
+            if (downloadBtn) downloadBtn.disabled = false;
+            
+            if (loadingOverlay) loadingOverlay.classList.add('d-none');
+            
+            if (spinner) spinner.classList.add('d-none');
+            if (buttonContent) buttonContent.classList.remove('d-none');
+        }
+    }
+}
+
+// Loading State - Enhanced with UI state management
 function showLoading() {
+    setLoadingState(true);
+    
+    // For backward compatibility with the existing code
     document.body.classList.add('loading');
-    const loadingOverlay = document.createElement('div');
-    loadingOverlay.className = 'loading-overlay';
-    document.body.appendChild(loadingOverlay);
+    if (!document.querySelector('.loading-overlay')) {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.id = 'loading-overlay';
+        document.body.appendChild(loadingOverlay);
+    }
 }
 
 function hideLoading() {
+    setLoadingState(false);
+    
+    // For backward compatibility with the existing code
     document.body.classList.remove('loading');
     const loadingOverlay = document.querySelector('.loading-overlay');
     if (loadingOverlay) {
